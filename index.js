@@ -9,19 +9,20 @@ const getNeighbors = ([x, y]) => [
 
 const getAliveNeighborsCount = (board, p) => {
   const neighbors = getNeighbors(p)
-  return neighbors.map(([xn, yn]) =>
-    board.find(([xb, yb]) => xn === xb && yn === yb)
-  ).filter(x => x !== undefined).length
+  return neighbors.reduce(
+    (acc, [xn, yn]) => acc + (
+      board.find(([xb, yb]) => xn === xb && yn === yb) !== undefined ? 1 : 0
+    ),
+    0
+  )
 }
 
 const getDeadNeighbors = (board, p) => {
   const neighbors = getNeighbors(p)
-  return neighbors.map(([xn, yn]) =>
-    (board.find(([xb, yb]) => xn === xb && yn === yb) === undefined
-      ? [xn, yn]
-      : undefined
-    )
-  ).filter(x => x !== undefined)
+  return neighbors.reduce((acc, [xn, yn]) => [
+    ...acc,
+    ...(board.find(([xb, yb]) => xn === xb && yn === yb) === undefined ? [[xn, yn]] : [])
+  ], [])
 }
 
 const parseBoard = (input) => input
@@ -40,9 +41,8 @@ const evolve = (board) => cleanboard(board
         ...acc,
         ...cellNeighborCount === 3 || cellNeighborCount === 2 ? [cell] : [],
         ...(
-          getDeadNeighbors(board, cell)
-          .reduce((acc, pd) =>
-            getAliveNeighborsCount(board, pd) === 3 ? [...acc, pd] : acc, []
+          getDeadNeighbors(board, cell).reduce(
+            (acc, pd) => getAliveNeighborsCount(board, pd) === 3 ? [...acc, pd] : acc, []
           )
         )
       ]
