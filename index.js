@@ -33,23 +33,22 @@ const parseBoard = (input) => input
       [])
   ).reduce((acc, x) => acc.concat(x), [])
 
-const evolve = (board) => cleanboard(board
+const evolve = (board) => board
   .reduce(
-    (acc, cell) => {
+    (acc, cell, _, cboard) => {
       const cellNeighborCount = getAliveNeighborsCount(board, cell)
       return [
         ...acc,
         ...cellNeighborCount === 3 || cellNeighborCount === 2 ? [cell] : [],
         ...(
           getDeadNeighbors(board, cell).reduce(
-            (acc, pd) => getAliveNeighborsCount(board, pd) === 3 ? [...acc, pd] : acc, []
+            (accd, pd) => acc.find(([xc, yc]) => xc === pd[0] && yc === pd[1]) === undefined &&
+            getAliveNeighborsCount(board, pd) === 3 ? [...accd, pd] : accd, []
           )
         )
       ]
-      // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
     }
     , [])
-)
 
 const renderToStr = (board) => {
   // What happens when we have negative x's and y's?
@@ -81,7 +80,6 @@ const b1 = parseBoard(`
 
 `)
 var board = b1
-const cleanboard = (board) => board.filter(([x1, y1], pos, arr) => arr.findIndex(([x2, y2]) => x1 === x2 && y1 === y2) === pos)
 setInterval(() => {
   board = evolve(board)
   console.log(renderToStr(board))
